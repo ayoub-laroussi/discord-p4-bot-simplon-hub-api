@@ -1,0 +1,39 @@
+{
+  "name": "discord-p4-bot-simplon-hub-api",
+  "version": "1.0.0",
+  "description": "## About the project",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ayoub-laroussi/discord-p4-bot-simplon-hub-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ayoub-laroussi/discord-p4-bot-simplon-hub-api/issues"
+  },
+  "homepage": "https://github.com/ayoub-laroussi/discord-p4-bot-simplon-hub-api#readme",
+  "dependencies": {
+    "@nestjs/common": "^11.0.5",
+    "@nestjs/core": "^11.0.5",
+    "@nestjs/platform-express": "^11.0.5",
+    "@nestjs/platform-fastify": "^11.0.5",
+    "reflect-metadata": "^0.2.2",
+    "typescript": "^5.7.3"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.2",
+    "@nestjs/schematics": "^11.0.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.9",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2"
+  }
+}
