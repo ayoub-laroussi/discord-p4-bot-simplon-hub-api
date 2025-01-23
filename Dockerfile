@@ -5,11 +5,12 @@ WORKDIR /app
 # Installer globalement le CLI NestJS
 RUN npm install -g @nestjs/cli
 
-COPY package*.json ./
+# Copier les fichiers du dossier api
+COPY api/package*.json ./
 
 RUN npm install
 
-COPY . .
+COPY api/ .
 
 EXPOSE 3000
 

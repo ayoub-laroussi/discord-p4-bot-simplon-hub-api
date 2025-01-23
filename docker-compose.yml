@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   api:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: nest-api
     ports:
       - "3000:3000"
@@ -14,7 +16,7 @@ services:
       - postgres
       - redis
     volumes:
-      - .:/app
+      - ./api:/app
       - /app/node_modules
 
   postgres:
