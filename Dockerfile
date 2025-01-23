@@ -2,10 +2,12 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY . .
+COPY package*.json ./
 
 RUN npm install
 
+COPY . .
+
 EXPOSE 3000
 
-CMD ["/bin/sh", "-c", "npm run dev"]
+CMD ["/bin/sh", "-c", "npm run start:dev"]
