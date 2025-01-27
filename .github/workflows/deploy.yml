@@ -6,20 +6,36 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      # 1. Build le projet
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: './api/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd api
+          npm install
+
+      - name: Build project
+        run: |
+          cd api
+          npm run build
+
+      # 2 & 3. Construire et push l'image Docker
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -27,105 +43,29 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
-          build-args: |
-            NODE_ENV=production
 
-      - name: Setup VPS
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            # Créer le dossier du projet s'il n'existe pas
-            mkdir -p ~/discord-p4-bot
-            cd ~/discord-p4-bot
-            
-            # Copier les fichiers de configuration s'ils n'existent pas
-            if [ ! -f "docker-compose.yml" ]; then
-              cat > docker-compose.yml << 'EOL'
-              services:
-                api:
-                  image: ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
-                  container_name: nest-api
-                  ports:
-                    - "3000:3000"
-                  environment:
-                    - NODE_ENV=production
-                    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
-                    - REDIS_URL=redis://redis:6379
-                  depends_on:
-                    - postgres
-                    - redis
-
-                postgres:
-                  image: postgres:latest
-                  container_name: postgres-db
-                  environment:
-                    - POSTGRES_USER=postgres
-                    - POSTGRES_PASSWORD=postgres
-                    - POSTGRES_DB=postgres
-                  ports:
-                    - "5432:5432"
-                  volumes:
-                    - postgres_data:/var/lib/postgresql/data
-
-                redis:
-                  image: redis:latest
-                  container_name: redis-cache
-                  ports:
-                    - "6379:6379"
-                  volumes:
-                    - redis_data:/data
-
-                nginx:
-                  image: nginx:latest
-                  container_name: nginx-proxy
-                  ports:
-                    - "80:80"
-                  volumes:
-                    - ./nginx.conf:/etc/nginx/nginx.conf:ro
-                  depends_on:
-                    - api
-
-              volumes:
-                postgres_data:
-                redis_data:
-              EOL
-            fi
-
-            if [ ! -f "nginx.conf" ]; then
-              cat > nginx.conf << 'EOL'
-              events {
-                worker_connections 1024;
-              }
-
-              http {
-                upstream api {
-                  server api:3000;
-                }
-
-                server {
-                  listen 80;
-                  server_name localhost;
-
-                  location / {
-                    proxy_pass http://api;
-                    proxy_set_header Host $host;
-                    proxy_set_header X-Real-IP $remote_addr;
-                  }
-                }
-              }
-              EOL
-            fi
-
+      # 4 & 5. Se connecter au VPS et déployer
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_PASSPHRASE }}
           script: |
-            cd ~/discord-p4-bot
-            docker compose pull
-            docker compose up -d --force-recreate
+            # Pull la nouvelle image
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
+            
+            # Arrêter et supprimer l'ancien conteneur s'il existe
+            docker stop nest-api || true
+            docker rm nest-api || true
+            
+            # Lancer le nouveau conteneur
+            docker run -d \
+              --name nest-api \
+              -p 3000:3000 \
+              --network discord-network \
+              -e NODE_ENV=production \
+              -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres \
+              -e REDIS_URL=redis://redis:6379 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
