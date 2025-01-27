@@ -45,13 +45,29 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
 
       # 4 & 5. Se connecter au VPS et déployer
-      - name: Deploy to VPS
+      - name: Test SSH Connection
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          debug: true
+          script: |
+            echo "Testing SSH connection"
+            whoami
+            pwd
+
+      - name: Deploy to VPS
+        if: success()
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
           passphrase: ${{ secrets.VPS_PASSPHRASE }}
+          command_timeout: 10m
           script: |
             # Pull la nouvelle image
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
