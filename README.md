@@ -17,6 +17,7 @@ git clone https://github.com/votre-username/discord-p4-bot.git
 cd discord-p4-bot
 ```
 
+
 2. Installer les dépendances
 ```bash
 cd api
