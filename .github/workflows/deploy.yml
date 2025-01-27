@@ -52,6 +52,14 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            # Vérifier si l'utilisateur est dans le groupe docker
+            if ! groups | grep -q docker; then
+              echo "L'utilisateur n'est pas dans le groupe docker. Veuillez exécuter sur le VPS :"
+              echo "sudo usermod -aG docker $USER"
+              echo "puis déconnectez-vous et reconnectez-vous"
+              exit 1
+            fi
+
             mkdir -p ~/discord-p4-bot
             cd ~/discord-p4-bot
             
@@ -62,6 +70,12 @@ jobs:
               echo "Pulling latest changes..."
               git pull
             fi
+            
+            # Supprimer l'attribut version obsolète du docker-compose.yml
+            sed -i '/^version:/d' docker-compose.yml
+            
+            # Vérifier les permissions Docker
+            docker ps > /dev/null 2>&1 || { echo "Erreur: Pas de permissions Docker. Exécutez : sudo usermod -aG docker $USER"; exit 1; }
             
             docker compose pull
             docker compose up -d --force-recreate
