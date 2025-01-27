@@ -52,6 +52,16 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /home/${{ secrets.VPS_USERNAME }}/discord-p4-bot
+            mkdir -p ~/discord-p4-bot
+            cd ~/discord-p4-bot
+            
+            if [ ! -f "docker-compose.yml" ]; then
+              echo "Cloning repository..."
+              git clone https://github.com/${{ github.repository }} .
+            else
+              echo "Pulling latest changes..."
+              git pull
+            fi
+            
             docker compose pull
             docker compose up -d --force-recreate
