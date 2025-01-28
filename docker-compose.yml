@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: nest-api
     ports:
-      - "9031:9031"
+      - "9011:9011"
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
