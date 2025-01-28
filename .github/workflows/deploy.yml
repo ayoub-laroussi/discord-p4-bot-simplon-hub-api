@@ -46,8 +46,21 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd ~/discord-p4-bot
+            
+            # Arrêter et supprimer tous les conteneurs existants
+            echo "Cleaning up old containers..."
+            docker stop nest-api postgres-db redis-cache nginx-proxy || true
+            docker rm nest-api postgres-db redis-cache nginx-proxy || true
+            
+            # Supprimer les réseaux existants
+            echo "Cleaning up networks..."
+            docker network rm discord-p4-bot_default || true
+            
+            echo "Starting deployment..."
             docker-compose pull
-            docker-compose down || true
             docker-compose up -d
+            
+            echo "Checking containers status..."
+            docker ps
             
             echo "Deployment complete"
