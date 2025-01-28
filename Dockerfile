@@ -12,7 +12,7 @@ RUN npm install
 
 COPY api/ .
 
-EXPOSE 9031
+EXPOSE 9011
 
 # Utiliser start:dev pour le développement avec hot reload
 CMD ["/bin/sh", "-c", "npm run start:dev"]
