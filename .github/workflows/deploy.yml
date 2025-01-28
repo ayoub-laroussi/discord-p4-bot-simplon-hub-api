@@ -34,7 +34,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           port: ${{ secrets.VPS_PORT }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "docker-compose.yml,nginx.conf"
+          source: "docker-compose-prod.yml,nginx.conf"
           target: "~/discord-p4-bot"
 
       - name: Deploy to VPS
@@ -57,8 +57,8 @@ jobs:
             docker network rm discord-p4-bot_default || true
             
             echo "Starting deployment..."
-            docker-compose pull
-            docker-compose up -d
+            docker-compose -f docker-compose-prod.yml pull
+            docker-compose -f docker-compose-prod.yml up -d
             
             echo "Checking containers status..."
             docker ps
