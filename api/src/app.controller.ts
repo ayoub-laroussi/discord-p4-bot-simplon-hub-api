@@ -9,4 +9,19 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('classes')
+  async getClasses() {
+    return this.appService.getClasses();
+  }
+
+  @Get('weapons')
+  async getWeapons() {
+    return this.appService.getWeapons();
+  }
+
+  @Get('bosses')
+  async getBosses() {
+    return this.appService.getBosses();
+  }
 }

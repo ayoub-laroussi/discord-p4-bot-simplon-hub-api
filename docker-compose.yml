@@ -8,7 +8,7 @@ services:
     container_name: nest-api
     environment:
       - NODE_ENV=development
-      - PORT=3000
+      - PORT=9011
     networks:
       - app-network
     depends_on:
