@@ -26,36 +26,33 @@ jobs:
           push: true  
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
 
-      # 3. Installer la clé SSH
-      - name: Install SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-
-      # 4. Test SSH Connection
-      - name: Test SSH Connection
-        run: ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} "echo 'SSH Connection successful'"
-
-      # 5. Déployer
+      # 3. Déployer avec debug SSH
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
-          key_path: ~/.ssh/deploy_key
+          port: ${{ secrets.VPS_PORT }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          debug: true
           script: |
-            # Pull la nouvelle image
+            whoami
+            echo "Current directory: $(pwd)"
+            echo "Testing Docker..."
+            docker ps || true
+            
+            echo "Pulling image..."
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
             
-            # Arrêter et supprimer l'ancien conteneur s'il existe
+            echo "Stopping old container..."
             docker stop nest-api || true
             docker rm nest-api || true
             
-            # Lancer le nouveau conteneur
+            echo "Starting new container..."
             docker run -d \
               --name nest-api \
               -p 3000:3000 \
               -e NODE_ENV=production \
               ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
+            
+            echo "Deployment complete"
