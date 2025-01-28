@@ -26,7 +26,17 @@ jobs:
           push: true  
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
 
-      # 3. Déployer avec debug SSH
+      # 3. Déployer avec docker-compose
+      - name: Copy files to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          port: ${{ secrets.VPS_PORT }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose.yml,nginx.conf"
+          target: "~/discord-p4-bot"
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         with:
@@ -34,25 +44,10 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           port: ${{ secrets.VPS_PORT }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          debug: true
           script: |
-            whoami
-            echo "Current directory: $(pwd)"
-            echo "Testing Docker..."
-            docker ps || true
-            
-            echo "Pulling image..."
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
-            
-            echo "Stopping old container..."
-            docker stop nest-api || true
-            docker rm nest-api || true
-            
-            echo "Starting new container..."
-            docker run -d \
-              --name nest-api \
-              -p 9011:9011 \
-              -e NODE_ENV=production \
-              ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
+            cd ~/discord-p4-bot
+            docker-compose pull
+            docker-compose down || true
+            docker-compose up -d
             
             echo "Deployment complete"
