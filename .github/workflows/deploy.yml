@@ -54,4 +54,5 @@ jobs:
               -p 9011:9011 \
               -e NODE_ENV=production \
               ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
+            
             echo "Deployment complete"
