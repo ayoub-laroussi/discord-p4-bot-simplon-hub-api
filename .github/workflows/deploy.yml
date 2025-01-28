@@ -63,4 +63,11 @@ jobs:
             echo "Checking containers status..."
             docker ps
             
+            echo "Checking logs..."
+            docker logs nest-api
+            docker logs nginx-proxy
+            
+            echo "Checking network..."
+            docker network inspect discord-p4-bot_default
+            
             echo "Deployment complete"
