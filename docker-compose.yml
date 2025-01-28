@@ -6,12 +6,11 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: nest-api
-    ports:
-      - "9011:9011"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
-      - REDIS_URL=redis://redis:6379
+      - PORT=9011
+    networks:
+      - app-network
     depends_on:
       - postgres
       - redis
@@ -30,6 +29,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
   redis:
     image: redis:latest
@@ -38,17 +39,25 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - app-network
 
   nginx:
     image: nginx:latest
     container_name: nginx-proxy
     ports:
-      - "9011:9011"
+      - "9011:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - api
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  app-network:
+    driver: bridge
