@@ -54,5 +54,4 @@ jobs:
               -p 3000:3000 \
               -e NODE_ENV=production \
               ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
-            
             echo "Deployment complete"
