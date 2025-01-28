@@ -51,7 +51,7 @@ jobs:
             echo "Starting new container..."
             docker run -d \
               --name nest-api \
-              -p 9011:9011 \
+              -p 9031:9031 \
               -e NODE_ENV=production \
               ${{ secrets.DOCKERHUB_USERNAME }}/discord-p4-bot:latest
             
